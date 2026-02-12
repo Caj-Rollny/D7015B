@@ -1,9 +1,7 @@
 #%%
-
+#Caj Rollny, assignment 2 
 import numpy as np
 import pandas as pd
-
-import matplotlib
 import matplotlib.pyplot as plt
 
 
@@ -30,8 +28,9 @@ print(df.shape)
 
 """
 Drop the index
-Caj Rollny: See comment above - dropped it when reading the csv-file.
+Caj Rollny: See comment above - dropped it when reading the csv-file via the argument "index_col=0".
 """
+
 
 #%%
 """
@@ -46,7 +45,6 @@ dfc = grpByManu.get_group('c')
 
 
 #%%
-
 loada = dfa['load']
 timea = dfa['time']
 #Caj Rollny: compare all 3 manufacturers
@@ -54,89 +52,143 @@ loadb = dfb['load']
 timeb = dfb['time']
 loadc = dfc['load']
 timec = dfc['time']
+loadAll = df['load']
+timeAll = df['time']
 
-#%%
-'''
-Is there a relationship between load and time
-'''
-#Caj Rollny:generate graph:s for all manufacturers
-plt.scatter(loada, timea, color='blue')
-plt.title("Relation between load and time, manuf. A")
-plt.xlabel("Load")
-plt.ylabel("Time")
-plt.show()
 
-plt.scatter(loadb, timeb, color='green')
-plt.title("Relation between load and time, manuf. B")
-plt.xlabel("Load")
-plt.ylabel("Time")
-plt.show()
+#Caj Rollny: Question 1: "What is the range of load and time during operation for each manufacturer?"
 
-plt.scatter(loadc, timec, color='red')
-plt.title("Relation between load and time, manuf. C")
-plt.xlabel("Load")
-plt.ylabel("Time")
-plt.show()
-
-#Caj Rollny: switch to plot load over time:
-plt.scatter(timea, loada, color='blue')
-plt.title("Relation between load and time, manuf. A")
-plt.xlabel("Time")
-plt.ylabel("Load")
-plt.show()
-
-#Caj Rollny: plot all in one graph:
+#Range of loads:
+print("Manufacturer A; load min:", min(loada), "load max:", max(loada), "\n")
+print("Manufacturer B; load min:", min(loadb), "load max:", max(loadb), "\n")
+print("Manufacturer c; load min:", min(loadc), "load max:", max(loadc) )
+#Range om times:
+print("Manufacturer A; time min:", min(timea), "time max:", max(timea), "\n")
+print("Manufacturer B; time min:", min(timeb), "time max:", max(timeb), "\n")
+print("Manufacturer c; time min:", min(timec), "time max:", max(timec) )
 
 
 #%%
-'''
-Characteristics of data
-mean, median, mode
-'''
-print("Mean A:", dfa['load'].mean())
-print("Mode A:", dfa['load'].mode())
-print("Median A:", dfa['load'].median(), "\n")
-print("Mean B:", dfb['load'].mean())
-print("Mode B:", dfb['load'].mode())
-print("Median B:", dfb['load'].median(), "\n")
-print("Mean c:", dfc['load'].mean())
-print("Mode c:", dfc['load'].mode())
-print("Median c:", dfc['load'].median())
+
+#Caj Rollny: Question 2: what is the most expected load value?
+#print("Mode (all):", loadAll.mode())
+print("Mean (all):", loadAll.mean())
+#print("Mode A:", loada.mode())
+print("Mean A:", loada.mean())
+#print("Mode B:", loadb.mode())
+print("Mean B:", loadb.mean())
+#print("Mode c:", loadc.mode())
+print("Mean c:", loadc.mean())
 
 #%%
-'''
-How is load distributed
-Why does it matter
-uniform, normal, exponential, weibull
-'''
+#Caj Rollny: Question 3: "How are the load and time related?"
+
+plt.title("Load vs time")
+plt.xlabel("Load")
+plt.ylabel("Time")
+plt.scatter(loada,timea,color='blue', label="Manuf. A")
+plt.scatter(loadb,timeb,color='red', label="Manuf. B")
+plt.scatter(loadc,timec,color='green', label="Manuf. c")
+plt.legend()
+
+#%%
+#Caj Rollny: Question 4 "Which distribution best describes the load?"
+#Plot histograms:
 dfa[['load']].plot(kind='hist', bins=10)
 dfb[['load']].plot(kind='hist', bins=10)
 dfc[['load']].plot(kind='hist', bins=10)
 
+df[['load']].plot(kind='hist', bins=10)
+#They look similar, "normal" distribution but skewed right, maybe "lognormal" or "Weibull"?? 
+#let's try to fit the data to the probable distributions, asked ChatGPT to help me with the code!!! 
+# "Load Distribution with Normal, Lognormal, Weibull Fits"
+# 
+import seaborn as sns
+from scipy.stats import norm, lognorm, weibull_min
+    
+plt.figure(figsize=(10, 6))
+
+# Histogram + KDE
+sns.histplot(loadAll, bins=40, stat="density", kde=True, color="lightgray", label="Data")
+
+# Fit Normal
+mu, sigma = norm.fit(loadAll)
+x = np.linspace(min(loadAll), max(loadAll), 500)
+plt.plot(x, norm.pdf(x, mu, sigma), label=f"Normal (μ={mu:.2f}, σ={sigma:.2f})", linewidth=2)
+
+# Fit Lognormal
+shape, loc, scale = lognorm.fit(loadAll, floc=0)
+plt.plot(x, lognorm.pdf(x, shape, loc=loc, scale=scale), label=f"Lognormal (shape={shape:.2f})", linewidth=2)
+
+# Fit Weibull
+c, loc, scale = weibull_min.fit(loadAll, floc=0)
+plt.plot(x, weibull_min.pdf(x, c, loc=loc, scale=scale), label=f"Weibull (shape={c:.2f})", linewidth=2)
+plt.title("Load Distribution with Normal, Lognormal, Weibull Fits")
+plt.xlabel("Value")
+plt.ylabel("Density")
+plt.legend()
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
+
 
 #%%
-'''
-variance, standard deviation
-What is the meaning of 6sigma
-'''
-#%%
-'''
-Other plots that can be useful 
-boxplot
-'''
-#Caj Rollny: let's look at a boxplot compairing all manuf:
-all_manuf = [dfa, dfb, dfc]
-labels = ['Manyf A', 'Manuf B', 'Manuf c']
-colors = ['peachpuff', 'orange', 'tomato']
-fig, ax = plt.subplots()
-ax.set_ylabel('Load')
-bplot = ax.boxplot(all_manuf,
-                   patch_artist=True,  # fill with color
-                   tick_labels=labels)  # will be used to label x-ticks
+#Caj Rollny: Question 5 "Which distribution best describes the time?"
+#Plot histograms:
 
-# fill with colors
-for patch, color in zip(bplot['boxes'], colors):
-    patch.set_facecolor(color)
+dfa[['time']].plot(kind='hist', bins=10)
+dfb[['time']].plot(kind='hist', bins=10)
+dfc[['time']].plot(kind='hist', bins=10)
+
+df[['time']].plot(kind='hist', bins=10)
+#They look similar, "normal" distribution but skewed right, maybe "lognormal" or "Weibull"?? 
+#let's try to fit the data to the probable distributions, asked ChatGPT to help me with the code!!! 
+# "Load Distribution with Normal, Lognormal, Weibull Fits"
+# 
+import seaborn as sns
+from scipy.stats import norm, lognorm, weibull_min
+    
+plt.figure(figsize=(10, 6))
+
+# Histogram + KDE
+sns.histplot(timeAll, bins=40, stat="density", kde=True, color="lightgray", label="Data")
+
+# Fit Normal
+mu, sigma = norm.fit(timeAll)
+x = np.linspace(min(timeAll), max(timeAll), 500)
+plt.plot(x, norm.pdf(x, mu, sigma), label=f"Normal (μ={mu:.2f}, σ={sigma:.2f})", linewidth=2)
+
+# Fit Lognormal
+shape, loc, scale = lognorm.fit(timeAll, floc=0)
+plt.plot(x, lognorm.pdf(x, shape, loc=loc, scale=scale), label=f"Lognormal (shape={shape:.2f})", linewidth=2)
+
+# Fit Weibull
+c, loc, scale = weibull_min.fit(timeAll, floc=0)
+plt.plot(x, weibull_min.pdf(x, c, loc=loc, scale=scale), label=f"Weibull (shape={c:.2f})", linewidth=2)
+plt.title("Time Distribution with Normal, Lognormal, Weibull Fits")
+plt.xlabel("Value")
+plt.ylabel("Density")
+plt.legend()
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+#%%
+#Caj Rollny: Question 6: "Which manufacturer has the best performance and why?
+#Plot:
+
+plt.title("Performance comparison")
+plt.xlabel("Load")
+plt.ylabel("Time")
+plt.scatter(loada,timea,color='blue', label="Manuf. A")
+plt.scatter(loadb,timeb,color='red', label="Manuf. B")
+plt.scatter(loadc,timec,color='green', label="Manuf. c")
+plt.legend()
 
 plt.show()
-# %%
+
+#Caj Rollny: calculate the mean time to failure (MTTF):
+
+# Compute mean time to failure per manufacturer 
+mean_ttf = df.groupby("manufacturef")["time"].mean() 
+print(mean_ttf)
