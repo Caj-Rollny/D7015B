@@ -188,7 +188,9 @@ plt.legend()
 plt.show()
 
 #Caj Rollny: calculate the mean time to failure (MTTF):
+print("MTTF (all):", timeAll.mean())
+print("MTTF A:", timea.mean())
+print("MTTF B:", timeb.mean())
+print("MTTF c:", timec.mean())
 
-# Compute mean time to failure per manufacturer 
-mean_ttf = df.groupby("manufacturef")["time"].mean() 
-print(mean_ttf)
+# %%
