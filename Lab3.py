@@ -21,8 +21,8 @@ Task to pass with Grade 3:
 df1 = pd.read_csv('Trail1_extracted_features_acceleration_m1ai1-1-1.csv') 
 df2 = pd.read_csv('Trail2_extracted_features_acceleration_m1ai1-2.csv')
 df3 = pd.read_csv('Trail3_extracted_features_acceleration_m2ai0-2.csv')
-# 1.2: Combine the datasets:
 
+# 1.2: Combine the datasets:
 df_combined = pd.concat([df1, df2, df3], ignore_index=True)
 
 #1.3: Remove the columns start_time, axle, cluster, tsne_1, and tsne_2 from the dataset.
@@ -46,7 +46,7 @@ df_combined_normal.to_csv("lab3_combined_dataset.csv", index=False)
 # %%
 #2.1:  Normalize the dataset. 
 #check if NULL/NaN values in dataset:
-#print(df_combined_normal.isnull().sum())
+print(df_combined_normal.isnull().sum())
 #dataset looks fine.
 #separate features and target:
 #features:
@@ -85,7 +85,7 @@ from sklearn.metrics import accuracy_score, classification_report
 X_train, X_test, y_train, y_test = train_test_split(X_scaled,y,test_size=0.2, random_state=42)
 
 #Train SVM classifier:
-svm_model = svm.SVC()
+svm_model = svm.SVC(kernel="rbf", random_state=42)
 svm_model.fit(X_train,y_train)
 #Evaluate:
 y_pred = svm_model.predict(X_test)
@@ -94,12 +94,12 @@ print(f'\nSVM Accuracy (80/20 plit): {accuracy:.4f} ')
 print(classification_report(y_test,y_pred,target_names=['Normal', 'Event']))
 
 #%%
-#2: k-fold cross-validation, 5-fold, om training dataset:
+#2: k-fold stratified cross-validation, 5-fold, on training dataset:
 cv = StratifiedKFold(n_splits=5,shuffle=True, random_state=True)
 #Perform cross-validation:
 svm_cv = svm.SVC(kernel='rbf',random_state=42)
-cv_scores = cross_val_score(svm_cv,X_scaled,y,cv=cv,scoring='accuracy')
-print("K-Fold Cross-ValidationResults 5-Fold\n")
+cv_scores = cross_val_score(svm_cv,X_scaled,y,cv=cv,scoring="accuracy")
+print("K-Fold Cross-Validation Results 5-Fold\n")
 for i, score in enumerate(cv_scores, 1):
     print(f" Fold{i}: {score:.4f}")
 
