@@ -1,1 +1,3 @@
-D7015B Assignment 5, Caj Rollny
+# D7015B Assignment 5 documentation
+## Author: Caj Rollny
+
